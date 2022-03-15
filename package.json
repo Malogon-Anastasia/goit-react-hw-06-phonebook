@@ -2,7 +2,7 @@
   "name": "goit-react-hw-03-phonebook",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://Malogon-Anastasia.github.io/goit-react-hw-04-hooks-phonebook",
+  "homepage": "https://Malogon-Anastasia.github.io/goit-react-hw-06-phonebook",
   "dependencies": {
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
