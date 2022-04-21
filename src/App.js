@@ -1,27 +1,18 @@
-import React, { useState, useEffect } from "react";
+// import React, { useState, useEffect } from "react";
 import Section from "./Components/Section";
 import ContactForm from "./Components/ContactForm";
 import ContactList from "./Components/ContactList";
 import { nanoid } from "nanoid";
 import toast, { Toaster } from "react-hot-toast";
 import Filter from "./Components/Filter";
+import { useSelector, useDispatch } from "react-redux";
+import { addContact, deleteContact } from "./redux/sliceContacts";
+import { changeFilter } from "./redux/sliceFilter";
 
-const LS_KEY = "contacts";
-const contactId = nanoid();
-const numberId = nanoid();
-
-const App = () => {
-  const [contacts, setContacts] = useState([]);
-  const [filter, setFilter] = useState("");
-  const filteredContacts = getFilteredContacts();
-
-  useEffect(() => {
-    const localStorageItems = JSON.parse(localStorage.getItem(LS_KEY));
-
-    if (localStorageItems) {
-      setContacts((prevState) => [...prevState, ...localStorageItems]);
-    }
-  }, []);
+export const App = () => {
+  const contacts = useSelector((state) => state.contacts.items);
+  const filter = useSelector((state) => state.contacts.filter);
+  const dispatch = useDispatch();
 
   const onHandleSubmit = (event) => {
     event.preventDefault();
@@ -40,26 +31,28 @@ const App = () => {
       return;
     }
 
-    const newContacts = [
-      ...contacts,
-      { id: nanoid(), name: contactName, number: contactPhone },
-    ];
+    const newContact = {
+      id: nanoid(),
+      name: contactName,
+      number: contactPhone,
+    };
 
-    setContacts(newContacts);
-    localStorage.setItem(LS_KEY, JSON.stringify(newContacts));
+    dispatch(addContact(newContact));
     form.reset();
   };
 
   const onSearchInput = (event) => {
     const inputValue = event.target.value;
 
-    setFilter(inputValue);
+    dispatch(changeFilter(inputValue));
   };
 
+  const filteredContacts = getFilteredContacts();
   function getFilteredContacts() {
     const normalizedFilter = filter.toLowerCase();
+    const flatContacts = contacts.flat(Infinity);
 
-    const filteredContacts = contacts.filter(
+    const filteredContacts = flatContacts.filter(
       (contact) =>
         contact.name.toLowerCase().includes(normalizedFilter) ||
         contact.number.includes(normalizedFilter)
@@ -67,19 +60,11 @@ const App = () => {
 
     return filteredContacts;
   }
+  const contactId = nanoid();
+  const numberId = nanoid();
 
-  const deleteContact = (id) => {
-    setContacts((prevState) => {
-      const newContacts = prevState.filter((contact) => contact.id !== id);
-
-      if (newContacts.length === 0) {
-        localStorage.removeItem(LS_KEY);
-        return [];
-      }
-
-      localStorage.setItem(LS_KEY, JSON.stringify(newContacts));
-      return [...newContacts];
-    });
+  const deletedContact = (id) => {
+    dispatch(deleteContact(id));
   };
   return (
     <>
@@ -96,7 +81,7 @@ const App = () => {
         <ContactList
           contacts={contacts}
           filteredContacts={filteredContacts}
-          deleteContact={deleteContact}
+          deleteContact={deletedContact}
         />
       </Section>
       <Toaster />
